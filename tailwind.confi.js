@@ -1,8 +1,8 @@
 /** @type {import('tailwindcss').Config} */
-const defaultTheme = require("tailwindcss/defaultTheme");
-const colors = require("tailwindcss/colors");
+import defaultTheme from "tailwindcss/defaultTheme";
+import colors from "tailwindcss/colors";
 
-module.exports = {
+const config = {
   content: [
     // Include App Router, Pages Router, and Components
     "./app/**/*.{js,ts,jsx,tsx}",
@@ -59,3 +59,5 @@ module.exports = {
   },
   plugins: [],
 };
+
+export default config;

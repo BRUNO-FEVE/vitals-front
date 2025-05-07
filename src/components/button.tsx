@@ -4,16 +4,9 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   label?: string;
   icon?: JSX.Element;
   isPrimary?: boolean;
-  isIconButton?: boolean;
 }
 
-const Button = ({
-  label,
-  icon,
-  isPrimary = false,
-  isIconButton = false,
-  ...props
-}: ButtonProps) => {
+const Button = ({ label, icon, isPrimary = false, ...props }: ButtonProps) => {
   const baseStyle =
     "w-full bg-primary p-0.5 h-20 flex justify-center items-center transition-all duration-300";
 
