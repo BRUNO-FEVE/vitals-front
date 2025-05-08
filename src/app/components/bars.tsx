@@ -3,6 +3,7 @@
 import React from "react";
 import { motion } from "motion/react";
 import { topVariants, bottomVariants } from "./animationVariants";
+import Keyboard from "@/components/keyboard";
 
 interface BarsProps {
   isInitial: boolean;
@@ -19,11 +20,13 @@ export const Bars: React.FC<BarsProps> = ({ isInitial }) => (
       transition={{ duration: 0.5, ease: "easeInOut" }}
     />
     <motion.div
-      className="w-full bg-white absolute bottom-0 z-0"
+      className="w-full bg-white absolute bottom-0 z-10"
       variants={bottomVariants}
       initial="closed"
       animate={isInitial ? "closed" : "open"}
       transition={{ delay: 0.15, duration: 0.7, ease: "easeInOut" }}
-    />
+    >
+      <Keyboard />
+    </motion.div>
   </>
 );

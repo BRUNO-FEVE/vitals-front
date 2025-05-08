@@ -29,6 +29,7 @@ export const senhaLabelVariants: Variants = {
     y: 0,
     opacity: 1,
     fontSize: "2.5rem",
+    fontWeight: 400,
     transition: { duration: 0.1, delay: 0 },
   },
 };
