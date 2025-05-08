@@ -8,14 +8,14 @@ interface TitleSectionProps {
   stage: "INITIAL" | "IDENTIFY";
   senhaLabelVariant: "hidden" | "open" | "outOfFocus";
   animationDuration: number;
-  password: string;
+  queueNumber: string;
 }
 
 export const TitleSection: React.FC<TitleSectionProps> = ({
   stage,
   senhaLabelVariant,
   animationDuration,
-  password,
+  queueNumber,
 }) => {
   const isInitial = stage === "INITIAL";
 
@@ -67,7 +67,7 @@ export const TitleSection: React.FC<TitleSectionProps> = ({
         } h-fit right-3 bottom-0 top-0 my-auto text-[200px] text-white font-bold z-0 flex gap-2`}
       >
         <AnimatePresence initial={false}>
-          {password.split("").map((digit, idx) => (
+          {queueNumber.split("").map((digit, idx) => (
             <motion.span
               key={digit + idx}
               layout
