@@ -1,56 +1,70 @@
 "use client";
+import { useRouter } from "next/navigation";
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
 // Define the context value type
-interface PasswordContextType {
-  password: string;
+interface QueueNumberContextType {
+  queueNumber: string;
   addDigit: (digit: string) => void;
   removeDigit: () => void;
-  setPassword: (newPassword: string) => void;
+  setQueueNumber: (newQueueNumber: string) => void;
+  submit: () => void;
 }
 
-const PasswordContext = createContext<PasswordContextType | undefined>(
+const QueueNumberContext = createContext<QueueNumberContextType | undefined>(
   undefined
 );
 
-interface PasswordProviderProps {
+interface QueueNumberProviderProps {
   children: ReactNode;
 }
 
-export const PasswordProvider: React.FC<PasswordProviderProps> = ({
+export const QueueNumberProvider: React.FC<QueueNumberProviderProps> = ({
   children,
 }) => {
-  const [password, setPasswordState] = useState<string>("");
+  const [queueNumber, setQueueNumberState] = useState<string>("");
+  const router = useRouter();
+
+  const MAX_QUEUE_NUMBER_LENGTH = 3;
 
   const addDigit = (digit: string) => {
-    if (/^[a-zA-Z0-9]$/.test(digit) && password.length < 3) {
-      setPasswordState((prev) => prev + digit);
+    if (
+      /^[a-zA-Z0-9]$/.test(digit) &&
+      queueNumber.length < MAX_QUEUE_NUMBER_LENGTH
+    ) {
+      setQueueNumberState((prev) => prev + digit);
     }
   };
 
   const removeDigit = () => {
-    setPasswordState((prev) => prev.slice(0, -1));
+    setQueueNumberState((prev) => prev.slice(0, -1));
   };
 
-  const setPassword = (newPassword: string) => {
-    if (/^[a-zA-Z0-9]{0,3}$/.test(newPassword)) {
-      setPasswordState(newPassword);
+  const setQueueNumber = (newQueueNumber: string) => {
+    if (/^[a-zA-Z0-9]{0,3}$/.test(newQueueNumber)) {
+      setQueueNumberState(newQueueNumber);
+    }
+  };
+
+  const submit = () => {
+    if (queueNumber.length === 3) {
+      router.push(`/confirm/${queueNumber}`);
     }
   };
 
   return (
-    <PasswordContext.Provider
-      value={{ password, addDigit, removeDigit, setPassword }}
+    <QueueNumberContext.Provider
+      value={{ queueNumber, addDigit, removeDigit, setQueueNumber, submit }}
     >
       {children}
-    </PasswordContext.Provider>
+    </QueueNumberContext.Provider>
   );
 };
 
-export const usePassword = (): PasswordContextType => {
-  const context = useContext(PasswordContext);
+export const useQueueNumber = (): QueueNumberContextType => {
+  const context = useContext(QueueNumberContext);
   if (!context) {
-    throw new Error("usePassword must be used within a PasswordProvider");
+    throw new Error("useQueueNumber must be used within a QueueNumberProvider");
   }
   return context;
 };

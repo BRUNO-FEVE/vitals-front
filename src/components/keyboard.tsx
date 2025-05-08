@@ -1,11 +1,11 @@
 import React from "react";
 import { Button } from "./button";
 import { CaseUpper, Delete, MoveRight } from "lucide-react";
-import { usePassword } from "@/contexts/password-context";
+import { useQueueNumber } from "@/contexts/password-context";
 
 type KeyToken = "" | null | "submit" | "delete" | "shift" | `${number}`;
 
-// define each row as exactly 5 “slots”
+// define each row as exactly 5 "slots"
 const layout: KeyToken[][] = [
   ["shift", "1", "2", "3", "delete"],
   [null, "4", "5", "6", null],
@@ -13,11 +13,11 @@ const layout: KeyToken[][] = [
 ];
 
 export default function Keyboard() {
-  const { addDigit, removeDigit } = usePassword();
+  const { addDigit, removeDigit, submit } = useQueueNumber();
 
   const handlePress = (key: KeyToken) => {
     if (key === "delete") return removeDigit();
-    if (key === "submit") return () => {};
+    if (key === "submit") return submit();
     if (key && key !== "shift") return addDigit(key);
   };
 
@@ -34,7 +34,7 @@ export default function Keyboard() {
           return (
             <Button
               key={i}
-              icon={<CaseUpper />}
+              icon={<CaseUpper strokeWidth={1.3} />}
               direction="middle"
               onClick={() => {
                 /* your shift logic here */
@@ -48,7 +48,7 @@ export default function Keyboard() {
           return (
             <Button
               key={i}
-              icon={<Delete />}
+              icon={<Delete strokeWidth={1.3} />}
               direction="left"
               onClick={() => handlePress("delete")}
             />
@@ -60,7 +60,7 @@ export default function Keyboard() {
           return (
             <Button
               key={i}
-              icon={<MoveRight />}
+              icon={<MoveRight strokeWidth={1.3} />}
               isPrimary
               direction="right"
               onClick={() => handlePress("submit")}
