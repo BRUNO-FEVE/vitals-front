@@ -5,23 +5,23 @@ import { motion } from "motion/react";
 import { Bars } from "./components/bars";
 import { TitleSection } from "./components/title-section";
 import { InputArea } from "./components/input-area";
-import { usePassword } from "@/contexts/password-context";
+import { useQueueNumber } from "@/contexts/password-context";
 
 export default function Page() {
   type Stage = "INITIAL" | "IDENTIFY";
   type LabelState = "hidden" | "open" | "outOfFocus";
 
   const [stage, setStage] = useState<Stage>("INITIAL");
-  const [senhaLabelVariant, setSenhaLabelVariant] =
+  const [queueNumberLabelVariant, setQueueNumberLabelVariant] =
     useState<LabelState>("hidden");
   const [animationDuration, setAnimationDuration] = useState<number>(1.2);
 
-  const { password } = usePassword();
+  const { queueNumber } = useQueueNumber();
 
-  // Update label on password change
+  // Update label on queueNumber change
   useEffect(() => {
-    setSenhaLabelVariant(password.length > 0 ? "outOfFocus" : "open");
-  }, [password]);
+    setQueueNumberLabelVariant(queueNumber.length > 0 ? "outOfFocus" : "open");
+  }, [queueNumber]);
 
   // Shorten animation after initial open
   useEffect(() => {
@@ -38,9 +38,9 @@ export default function Page() {
       <Bars isInitial={isInitial} />
       <TitleSection
         stage={stage}
-        senhaLabelVariant={senhaLabelVariant}
+        senhaLabelVariant={queueNumberLabelVariant}
         animationDuration={animationDuration}
-        password={password}
+        queueNumber={queueNumber}
       />
       <InputArea stage={stage} onClick={() => setStage("IDENTIFY")} />
     </motion.div>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Courier_Prime } from "next/font/google";
 import "./globals.css";
-import { PasswordProvider } from "@/contexts/password-context";
+import { QueueNumberProvider } from "@/contexts/password-context";
 
 const courierPrime = Courier_Prime({
   weight: ["400", "700"],
@@ -33,7 +33,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans">
-        <PasswordProvider>{children}</PasswordProvider>
+        <QueueNumberProvider>{children}</QueueNumberProvider>
       </body>
     </html>
   );

@@ -1,11 +1,11 @@
 import React from "react";
 import { Button } from "./button";
 import { CaseUpper, Delete, MoveRight } from "lucide-react";
-import { usePassword } from "@/contexts/password-context";
+import { useQueueNumber } from "@/contexts/password-context";
 
 type KeyToken = "" | null | "submit" | "delete" | "shift" | `${number}`;
 
-// define each row as exactly 5 “slots”
+// define each row as exactly 5 "slots"
 const layout: KeyToken[][] = [
   ["shift", "1", "2", "3", "delete"],
   [null, "4", "5", "6", null],
@@ -13,7 +13,7 @@ const layout: KeyToken[][] = [
 ];
 
 export default function Keyboard() {
-  const { addDigit, removeDigit } = usePassword();
+  const { addDigit, removeDigit } = useQueueNumber();
 
   const handlePress = (key: KeyToken) => {
     if (key === "delete") return removeDigit();
