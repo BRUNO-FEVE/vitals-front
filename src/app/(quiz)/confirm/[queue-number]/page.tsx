@@ -6,7 +6,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 
 interface PageProps {
-  params: { "queue-number": string };
+  params: Promise<{ "queue-number": string }>;
 }
 
 export default function Page({}: PageProps) {
