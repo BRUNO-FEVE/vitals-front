@@ -34,7 +34,7 @@ export default function Keyboard() {
           return (
             <Button
               key={i}
-              icon={<CaseUpper />}
+              icon={<CaseUpper strokeWidth={1.3} />}
               direction="middle"
               onClick={() => {
                 /* your shift logic here */
@@ -48,7 +48,7 @@ export default function Keyboard() {
           return (
             <Button
               key={i}
-              icon={<Delete />}
+              icon={<Delete strokeWidth={1.3} />}
               direction="left"
               onClick={() => handlePress("delete")}
             />
@@ -60,7 +60,7 @@ export default function Keyboard() {
           return (
             <Button
               key={i}
-              icon={<MoveRight />}
+              icon={<MoveRight strokeWidth={1.3} />}
               isPrimary
               direction="right"
               onClick={() => handlePress("submit")}
