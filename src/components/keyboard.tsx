@@ -9,7 +9,7 @@ type KeyToken = "" | null | "submit" | "delete" | "shift" | `${number}`;
 const layout: KeyToken[][] = [
   ["shift", "1", "2", "3", "delete"],
   [null, "4", "5", "6", null],
-  [null, "7", "8", "9", "submit"],
+  ["0", "7", "8", "9", "submit"],
 ];
 
 export default function Keyboard() {
