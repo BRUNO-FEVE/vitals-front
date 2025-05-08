@@ -13,11 +13,11 @@ const layout: KeyToken[][] = [
 ];
 
 export default function Keyboard() {
-  const { addDigit, removeDigit } = useQueueNumber();
+  const { addDigit, removeDigit, submit } = useQueueNumber();
 
   const handlePress = (key: KeyToken) => {
     if (key === "delete") return removeDigit();
-    if (key === "submit") return () => {};
+    if (key === "submit") return submit();
     if (key && key !== "shift") return addDigit(key);
   };
 

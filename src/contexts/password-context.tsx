@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
 // Define the context value type
@@ -7,6 +8,7 @@ interface QueueNumberContextType {
   addDigit: (digit: string) => void;
   removeDigit: () => void;
   setQueueNumber: (newQueueNumber: string) => void;
+  submit: () => void;
 }
 
 const QueueNumberContext = createContext<QueueNumberContextType | undefined>(
@@ -21,6 +23,7 @@ export const QueueNumberProvider: React.FC<QueueNumberProviderProps> = ({
   children,
 }) => {
   const [queueNumber, setQueueNumberState] = useState<string>("");
+  const router = useRouter();
 
   const addDigit = (digit: string) => {
     if (/^[a-zA-Z0-9]$/.test(digit) && queueNumber.length < 3) {
@@ -38,9 +41,15 @@ export const QueueNumberProvider: React.FC<QueueNumberProviderProps> = ({
     }
   };
 
+  const submit = () => {
+    if (queueNumber.length === 3) {
+      router.push(`/confirm/${queueNumber}`);
+    }
+  };
+
   return (
     <QueueNumberContext.Provider
-      value={{ queueNumber, addDigit, removeDigit, setQueueNumber }}
+      value={{ queueNumber, addDigit, removeDigit, setQueueNumber, submit }}
     >
       {children}
     </QueueNumberContext.Provider>

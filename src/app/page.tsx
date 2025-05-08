@@ -33,6 +33,12 @@ export default function Page() {
 
   const isInitial = stage === "INITIAL";
 
+  useEffect(() => {
+    if (queueNumber.length === 3) {
+      setStage("IDENTIFY");
+    }
+  }, [queueNumber]);
+
   return (
     <motion.div className="w-screen h-screen bg-brand-primary group">
       <Bars isInitial={isInitial} />
