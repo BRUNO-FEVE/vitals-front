@@ -26,7 +26,7 @@ export const Bars: React.FC<BarsProps> = ({ isInitial }) => (
       animate={isInitial ? "closed" : "open"}
       transition={{ delay: 0.15, duration: 0.7, ease: "easeInOut" }}
     >
-      <Keyboard />
+      {isInitial ? null :}
     </motion.div>
   </>
 );
