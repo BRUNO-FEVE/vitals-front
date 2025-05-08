@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { JSX } from "react";
 
 type Direction =
@@ -15,6 +16,10 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   disabled?: boolean;
   disabledPadding?: boolean;
   direction?: Direction;
+  /** outer button background */
+  buttonBgColor?: string;
+  /** inner content background */
+  contentBgColor?: string;
 }
 
 export function Button({
@@ -24,18 +29,25 @@ export function Button({
   disabled = false,
   disabledPadding = false,
   direction = "vertical-middle",
+  buttonBgColor = "bg-brand-primary",
+  contentBgColor = "bg-white",
   ...props
 }: ButtonProps) {
-  const baseStyle = isPrimary
-    ? "w-full relative bg-brand-primary text-white p-[0.5px] h-20 flex justify-center items-center transition-all duration-300"
-    : "w-full relative bg-brand-primary p-[0.5px] h-20 flex justify-center items-center transition-all duration-300";
+  // base button: full size, padding, custom bg
+  const baseStyle = cn(
+    "w-full relative p-[0.5px] h-20 flex justify-center items-center transition-all duration-300",
+    buttonBgColor,
+    isPrimary && "text-white"
+  );
 
+  // hover text color
   const hoverStyle = isPrimary
     ? "hover:text-black"
     : direction === "middle"
     ? ""
     : "hover:text-white";
 
+  // map your direction → padding
   const paddingHoverMap: Record<Direction, string> = {
     "vertical-middle": "hover:py-10",
     top: isPrimary ? "hover:pt-0 pt-20" : "hover:pb-20",
@@ -44,21 +56,21 @@ export function Button({
     left: isPrimary ? "hover:pl-0 pl-[100%]" : "hover:pr-[100%]",
     middle: "hover:p-2",
   };
-
   const paddingHover = disabledPadding ? "" : paddingHoverMap[direction];
 
   const disabledStyle = "disabled:opacity-50 disabled:cursor-not-allowed";
 
-  const classes = [
+  const classes = cn(
     baseStyle,
     disabledStyle,
-    disabledPadding ? "" : `${hoverStyle} cursor-pointer ${paddingHover}`,
-  ].join(" ");
+    !disabledPadding && cn("cursor-pointer", hoverStyle, paddingHover),
+    props.className
+  );
 
   return (
     <button {...props} disabled={disabled} className={classes}>
-      <div className={`h-full w-full bg-white`} />
-      <div className="absolute top-0 bottom-0 left-0 right-0 m-auto z-10 flex items-center justify-center">
+      <div className={cn("h-full w-full", contentBgColor)} />
+      <div className="absolute inset-0 z-10 flex items-center justify-center">
         {icon ?? label}
       </div>
     </button>
