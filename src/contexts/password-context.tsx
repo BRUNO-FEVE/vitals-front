@@ -26,7 +26,7 @@ export const QueueNumberProvider: React.FC<QueueNumberProviderProps> = ({
   const router = useRouter();
 
   const addDigit = (digit: string) => {
-    if (/^[a-zA-Z0-9]$/.test(digit) && queueNumber.length < 3) {
+    if (/^[a-zA-Z0-9]$/.test(digit) && queueNumber.length < MAX_QUEUE_NUMBER_LENGTH) {
       setQueueNumberState((prev) => prev + digit);
     }
   };
