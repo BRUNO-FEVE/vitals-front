@@ -64,31 +64,28 @@ export const TitleSection: React.FC<TitleSectionProps> = ({
       <h1
         className={`${
           isInitial ? "hidden" : "absolute"
-        } h-fit right-3 bottom-0 top-0 my-auto text-[200px] text-white font-bold z-0`}
-      >
-        {password}
-      </h1>
-      {/* <h1
-        className={`$${
-          isInitial ? "hidden" : "absolute"
         } h-fit right-3 bottom-0 top-0 my-auto text-[200px] text-white font-bold z-0 flex gap-2`}
-        style={{ letterSpacing: "0.1em" }}
       >
         <AnimatePresence initial={false}>
           {password.split("").map((digit, idx) => (
             <motion.span
               key={digit + idx}
-              initial={{ scale: 0.7, opacity: 0, y: 40 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.7, opacity: 0, y: -40 }}
-              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+              layout
+              initial={{ opacity: 1, x: 200 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 200 }}
+              transition={{
+                type: "spring",
+                stiffness: 400,
+                damping: 40,
+              }}
               className="inline-block"
             >
               {digit}
             </motion.span>
           ))}
         </AnimatePresence>
-      </h1> */}
+      </h1>
     </div>
   );
 };
