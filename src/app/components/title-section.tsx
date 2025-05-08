@@ -55,7 +55,7 @@ export const TitleSection: React.FC<TitleSectionProps> = ({
               custom={animationDuration}
               className="text-white font-semibold"
             >
-              SENHA DE ESPERA
+              SENHA DE ESPERA{senhaLabelVariant === "outOfFocus" ? "" : "..."}
             </motion.h1>
           )}
         </AnimatePresence>
@@ -64,7 +64,7 @@ export const TitleSection: React.FC<TitleSectionProps> = ({
       <h1
         className={`${
           isInitial ? "hidden" : "absolute"
-        } h-fit right-3 bottom-0 top-0 my-auto text-[200px] text-white font-bold z-10`}
+        } h-fit right-3 bottom-0 top-0 my-auto text-[200px] text-white font-bold z-0`}
       >
         {password}
       </h1>
