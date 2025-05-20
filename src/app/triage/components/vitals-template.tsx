@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import EmergencyButton from "./emergency-button";
 import { cn } from "@/lib/utils";
@@ -39,7 +41,7 @@ export default function VitalsTemplate({ index }: VitalsTemplateProps) {
     }, tickInterval);
 
     return () => clearInterval(id);
-  }, [next]);
+  }, [next, isActive]);
 
   return (
     <div className="w-full h-full flex flex-row">

@@ -15,7 +15,7 @@ export default function EndQuiz() {
         window.location.reload();
       }, 2000);
     }
-  }, [currentIndex]);
+  }, [quizList.length, currentIndex, router]);
 
   return (
     <div className="bg-black w-full h-full text-white flex justify-center items-center font-bold font-mono">

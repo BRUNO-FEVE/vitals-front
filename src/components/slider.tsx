@@ -17,7 +17,7 @@ export default function Slider({ range, setValue }: SliderProps) {
     } else if (internalValue && internalValue[0] !== undefined) {
       setValue(range[Math.floor(internalValue[0] / RANGE_FOR_EACH)]);
     }
-  }, [internalValue]);
+  }, [internalValue, RANGE_FOR_EACH, range, setValue]);
 
   return (
     <SliderPrimitive.Root

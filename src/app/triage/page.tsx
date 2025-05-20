@@ -5,7 +5,7 @@ import React, { ReactNode } from "react";
 import { useQuiz } from "@/contexts/quiz-context";
 import { cn } from "@/lib/utils";
 
-export const anim: Variants = {
+const anim: Variants = {
   hidden: {
     position: "absolute",
     display: "none",
