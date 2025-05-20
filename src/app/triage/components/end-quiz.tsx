@@ -11,8 +11,7 @@ export default function EndQuiz() {
   useEffect(() => {
     if (quizList.length - 1 === currentIndex) {
       setTimeout(() => {
-        router.push("/");
-        window.location.reload();
+        router.push("/end");
       }, 2000);
     }
   }, [quizList.length, currentIndex, router]);
