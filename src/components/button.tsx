@@ -58,7 +58,7 @@ export function Button({
   };
   const paddingHover = disabledPadding ? "" : paddingHoverMap[direction];
 
-  const disabledStyle = "disabled:opacity-50 disabled:cursor-not-allowed";
+  const disabledStyle = "disabled:cursor-not-allowed";
 
   const classes = cn(
     baseStyle,
@@ -69,7 +69,7 @@ export function Button({
 
   return (
     <button {...props} disabled={disabled} className={classes}>
-      <div className={cn("h-full w-full", contentBgColor)} />
+      <div className={cn("h-full w-full ", contentBgColor)} />
       <div className="absolute inset-0 z-10 flex items-center justify-center">
         {icon ?? label}
       </div>
