@@ -7,7 +7,7 @@
   /* Brand colors (from tailwind.config.js) */
   --color-brand-primary: #0025ee;
   --color-brand-primary-dark: #0046cc;
-  --color-brand-accent: #ff3b3f;
+  --color-brand-accent: #ff0000;
   --color-brand-accent-dark: #cc3232;
   --color-brand-background: #ffffff;
   --color-brand-muted: #f3f4f6;
@@ -133,3 +133,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* * {
+  cursor: none;
+} */
