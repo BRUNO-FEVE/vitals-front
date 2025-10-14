@@ -46,7 +46,7 @@ export default function MultiSelectionQuestion({
           className="grid gap-4 w-3/4 h-full py-12 overflow-y-scroll"
           initial={{ opacity: 0, y: "10%" }}
           animate={{ opacity: 1, y: "0%" }}
-          transition={{ delay: 1.8, duration: 1, ease: "easeInOut" }}
+          transition={{ delay: 0.3, duration: 1, ease: "easeInOut" }}
         >
           {options.map((option) => {
             const isSelected = selected.includes(option.value);

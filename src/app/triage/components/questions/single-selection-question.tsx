@@ -26,7 +26,7 @@ export default function SingleSelectionQuestion({
           className="grid gap-4 w-full h-full py-12 overflow-y-scroll"
           initial={{ opacity: 0, y: "10%" }}
           animate={{ opacity: 1, y: "0%" }}
-          transition={{ delay: 1.8, duration: 1, ease: "easeInOut" }}
+          transition={{ delay: 0, duration: 1, ease: "easeInOut" }}
         >
           {options.map((option) => (
             <Button

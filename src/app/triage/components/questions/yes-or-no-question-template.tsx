@@ -1,20 +1,22 @@
 import { motion } from "motion/react";
-import React, { ReactNode, useMemo } from "react";
+import React, { useMemo } from "react";
 
 import { useQuiz } from "@/contexts/quiz-context";
 // import EmergencyButton from "../emergency-button";
 import { QuizOption } from "@/contexts/quiz-context";
 
 interface QuestionTemplateProps {
-  prompt: ReactNode;
+  question: string;
   options?: QuizOption[];
 }
 
 export default function YesOrNoQuestionTemplate({
-  prompt,
+  question,
   options,
 }: QuestionTemplateProps) {
   const { next } = useQuiz();
+
+  console.log(question);
 
   const availableOptions = useMemo<QuizOption[]>(() => {
     if (options && options.length > 0) {
@@ -31,7 +33,7 @@ export default function YesOrNoQuestionTemplate({
 
   return (
     <>
-      <h1 className="font-bold text-5xl min-h-24 h-fit">{prompt}</h1>
+      <h1 className="font-bold text-5xl min-h-24 h-fit">{question}</h1>
       <motion.div
         className="grid grid-cols-2 gap-4 w-3/4"
         initial={{ opacity: 0, y: "10%" }}

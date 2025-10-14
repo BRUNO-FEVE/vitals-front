@@ -50,7 +50,7 @@ export default function SlideQuestion({
         className="flex flex-col justify-between h-full w-4/4 mt-6"
         initial={{ opacity: 0, y: "10%" }}
         animate={{ opacity: 1, y: "0%" }}
-        transition={{ delay: 1.8, duration: 1, ease: "easeInOut" }}
+        transition={{ delay: 0, duration: 1, ease: "easeInOut" }}
       >
         <h1 className="font-bold text-5xl">{question}</h1>
         <Slider setValue={setValue} range={optionsLabel} />
