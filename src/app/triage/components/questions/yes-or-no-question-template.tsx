@@ -16,8 +16,6 @@ export default function YesOrNoQuestionTemplate({
 }: QuestionTemplateProps) {
   const { next } = useQuiz();
 
-  console.log(question);
-
   const availableOptions = useMemo<QuizOption[]>(() => {
     if (options && options.length > 0) {
       return options;
