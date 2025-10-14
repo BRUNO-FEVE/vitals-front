@@ -70,7 +70,7 @@ export function Button({
   return (
     <button {...props} disabled={disabled} className={classes}>
       <div className={cn("h-full w-full ", contentBgColor)} />
-      <div className="absolute inset-0 z-10 flex items-center justify-center">
+      <div className="absolute inset-0 flex items-center justify-center">
         {icon ?? label}
       </div>
     </button>

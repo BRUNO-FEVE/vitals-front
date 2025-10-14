@@ -1,24 +1,32 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import Slider from "@/components/slider";
 import { motion } from "motion/react";
-import React, { useEffect, useMemo, useState } from "react";
-import EmergencyButton from "./emergency-button";
+import React, { ReactNode, useEffect, useMemo, useState } from "react";
+// import EmergencyButton from "../emergency-button";
 import { Button } from "@/components/button";
 import { MoveRight } from "lucide-react";
 import { useQuiz } from "@/contexts/quiz-context";
 
-export default function PainLevelQuestion() {
+export interface SlideQuestionProps {
+  question: ReactNode;
+  options: { label: string; value: string }[];
+}
+
+export default function SlideQuestion({
+  question,
+  options,
+}: SlideQuestionProps) {
   const [value, setValue] = useState<string>();
+  const [optionsLabel, setOptionsLabels] = useState<string[]>([]);
   const { next } = useQuiz();
 
-  const POSSIBLE_ANSWERS: string[] = [
-    "Sem dor",
-    "Dor leve",
-    "Dor moderada",
-    "Dor forte",
-    "Dor insuportável",
-  ];
-
   const [hasAnimated, setHasAnimated] = useState(false);
+
+  const handleSubmit = () => {
+    if (value) {
+      next(value);
+    }
+  };
 
   useEffect(() => {
     if (value && !hasAnimated) {
@@ -30,16 +38,22 @@ export default function PainLevelQuestion() {
     return value === undefined;
   }, [value]);
 
+  useEffect(() => {
+    options.map((option) => {
+      setOptionsLabels((prev) => [...prev, option.value]);
+    });
+  }, []);
+
   return (
     <>
       <motion.div
-        className="flex flex-col justify-between h-full w-3/4 mt-6"
+        className="flex flex-col justify-between h-full w-4/4 mt-6"
         initial={{ opacity: 0, y: "10%" }}
         animate={{ opacity: 1, y: "0%" }}
-        transition={{ delay: 1.8, duration: 1, ease: "easeInOut" }}
+        transition={{ delay: 0, duration: 1, ease: "easeInOut" }}
       >
-        <h1 className="font-bold text-5xl">Qual seu nível de dor?</h1>
-        <Slider setValue={setValue} range={POSSIBLE_ANSWERS} />
+        <h1 className="font-bold text-5xl">{question}</h1>
+        <Slider setValue={setValue} range={optionsLabel} />
         <div className="flex flex-row justify-end items-center">
           {value && (
             <motion.h1
@@ -48,7 +62,7 @@ export default function PainLevelQuestion() {
               animate={{ x: 0 }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
             >
-              {value}
+              {options.filter((option) => option.value === value)[0].label}
             </motion.h1>
           )}
           <div className="w-1/2">
@@ -62,14 +76,14 @@ export default function PainLevelQuestion() {
               }
               direction="right"
               buttonBgColor={disabled ? "bg-white" : "bg-black"}
-              onClick={next}
+              onClick={handleSubmit}
               disabled={disabled}
             />
           </div>
         </div>
       </motion.div>
 
-      <EmergencyButton />
+      {/* <EmergencyButton /> */}
     </>
   );
 }
