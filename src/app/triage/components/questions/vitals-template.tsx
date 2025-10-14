@@ -1,16 +1,17 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import EmergencyButton from "./emergency-button";
+import React, { ReactNode, useEffect, useState } from "react";
+// import EmergencyButton from "../emergency-button";
 import { cn } from "@/lib/utils";
 import { useQuiz } from "@/contexts/quiz-context";
 import { motion } from "motion/react";
 
 interface VitalsTemplateProps {
   index: number;
+  title: ReactNode;
 }
 
-export default function VitalsTemplate({ index }: VitalsTemplateProps) {
+export default function VitalsTemplate({ index, title }: VitalsTemplateProps) {
   const [progressPercentage, setProgressPercentage] = useState(0);
   const warning = false;
   const { next, currentIndex } = useQuiz();
@@ -35,7 +36,7 @@ export default function VitalsTemplate({ index }: VitalsTemplateProps) {
         clearInterval(id);
 
         setTimeout(() => {
-          next();
+          next("valor teste");
         }, 1000); // 1 sec delay
       }
     }, tickInterval);
@@ -73,9 +74,7 @@ export default function VitalsTemplate({ index }: VitalsTemplateProps) {
           />
         </div>
 
-        <h1 className="font-bold text-3xl pl-5 pt-3">
-          Medindo batimentos <br /> cardíacos oxigenação
-        </h1>
+        <h1 className="font-bold text-3xl pl-5 pt-3">{title}</h1>
         <p className="font-mono text-xs pl-5 pt-6">
           Por favor, aguarde{" "}
           <span className="font-bold text-brand-accent">parado</span> enquanto
@@ -83,7 +82,7 @@ export default function VitalsTemplate({ index }: VitalsTemplateProps) {
         </p>
       </div>
 
-      <EmergencyButton />
+      {/* <EmergencyButton /> */}
     </div>
   );
 }

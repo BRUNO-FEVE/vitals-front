@@ -1,9 +1,10 @@
 "use client";
 
 import { motion, Variants } from "motion/react";
-import React, { ReactNode } from "react";
+import React, { ReactNode, useEffect } from "react";
 import { useQuiz } from "@/contexts/quiz-context";
 import { cn } from "@/lib/utils";
+import { TriagemQuestions } from "./quiz/quiz";
 
 const anim: Variants = {
   hidden: {
@@ -40,7 +41,11 @@ const anim: Variants = {
 };
 
 export default function Page() {
-  const { quizList, currentIndex } = useQuiz();
+  const { createList, quizList, currentIndex } = useQuiz();
+
+  useEffect(() => {
+    createList(TriagemQuestions);
+  }, [createList]);
 
   return (
     <div
@@ -53,8 +58,8 @@ export default function Page() {
         <motion.div
           key={index}
           className={cn(
-            quizList.length - 1 === index ? "bg-black" : "bg-white",
-            "w-screen h-[78vh] px-[10%] py-[5%] flex flex-col gap-4"
+            "bg-white",
+            "w-screen h-[78vh] px-[10%] py-[5%] flex flex-col gap-4 overflow-hidden"
           )}
           variants={anim}
           initial="hidden"
