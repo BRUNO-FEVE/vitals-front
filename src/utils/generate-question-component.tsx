@@ -1,7 +1,7 @@
-import MultiSelectionQuestion from "@/app/triage/components/questions/multi-selection-question";
-import SingleSelectionQuestion from "@/app/triage/components/questions/single-selection-question";
-import SlideQuestion from "@/app/triage/components/questions/slide-question";
-import YesOrNoQuestionTemplate from "@/app/triage/components/questions/yes-or-no-question-template";
+import MultiSelectionQuestion from "@/app/triage/[queue-number]/components/questions/multi-selection-question";
+import SingleSelectionQuestion from "@/app/triage/[queue-number]/components/questions/single-selection-question";
+import SlideQuestion from "@/app/triage/[queue-number]/components/questions/slide-question";
+import YesOrNoQuestionTemplate from "@/app/triage/[queue-number]/components/questions/yes-or-no-question-template";
 import { QuestionType } from "@/contexts/quiz-context";
 
 export function generateQuestionComponent(question: QuestionType) {

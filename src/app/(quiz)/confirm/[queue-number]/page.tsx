@@ -1,21 +1,46 @@
 "use client";
 
 import { Check, X } from "lucide-react";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { AnimatedText } from "@/components/animated-text";
 import { AnimatePresence, motion, Variants } from "motion/react";
 
 export default function Page() {
+  const [user, setUser] = useState<
+    { name: string; dateOfBirth: string } | undefined
+  >(undefined);
   const [buttonOnFocus, setButtonOnFocus] = useState<"left" | "right">("right");
   const [isLeaving, setIsLeaving] = useState(false);
   const [nextPath, setNextPath] = useState<string | null>(null);
-  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
 
-  const obj = {
-    name: "Bruno Augusto Lopes Fevereiro",
-    "date-of-birth": "10/07/2002",
+  const router = useRouter();
+  const params = useParams();
+  const queueNumber = params["queue-number"];
+
+  const onLoad = async () => {
+    try {
+      const response = await fetch(`/api/patient/${queueNumber}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(errorData.error || "Erro desconhecido ao carregar paciente");
+        return;
+      }
+
+      const data = await response.json();
+      setUser(data.user);
+
+      console.log("✅ Paciente carregado:", data);
+    } catch (err) {
+      console.error("Erro na requisição:", err);
+      setError("Erro de conexão com o servidor.");
+    }
   };
 
   const buttonVariants: Variants = {
@@ -25,12 +50,27 @@ export default function Page() {
 
   function handleClick() {
     // decide where to go
-    const target = buttonOnFocus === "right" ? "/triage" : "/";
+
+    let target;
+    if (!error && buttonOnFocus === "right") {
+      target = `/triage/${queueNumber}`;
+    } else {
+      target = "/";
+    }
+
     setNextPath(target);
 
     // trigger exit animation
     setIsLeaving(true);
   }
+
+  const formattedDate = user
+    ? new Date(user.dateOfBirth).toLocaleDateString("pt-BR")
+    : "";
+
+  useEffect(() => {
+    onLoad();
+  }, []);
 
   return (
     <div className="bg-brand-primary w-screen h-screen flex justify-center items-center">
@@ -72,14 +112,20 @@ export default function Page() {
                     bounce: 0.3,
                   }}
                 >
-                  <p className="font-bold text-xl m-0">
-                    {obj.name}
-                    <br />
-                    <span className="font-normal text-base">
-                      Data de Nascimento{" "}
-                    </span>
-                    {obj["date-of-birth"]}
-                  </p>
+                  {error ? (
+                    <p className="text-red-400 font-bold text-lg">{error}</p>
+                  ) : user ? (
+                    <p className="font-bold text-xl m-0">
+                      {user.name}
+                      <br />
+                      <span className="font-normal text-base">
+                        Data de Nascimento{" "}
+                      </span>
+                      {formattedDate}
+                    </p>
+                  ) : (
+                    <p className="text-gray-400">Carregando dados...</p>
+                  )}
                 </motion.div>
               </div>
 
@@ -104,7 +150,8 @@ export default function Page() {
                 animate={buttonOnFocus}
                 transition={{ duration: 0.2, ease: "circInOut" }}
                 className={cn(
-                  "z-20 absolute bottom-0  w-1/2 h-1/2 bg-white mix-blend-difference transition-all"
+                  "z-20 absolute bottom-0  w-1/2 h-1/2 bg-white mix-blend-difference transition-all",
+                  `${error ? "cursor-not-allowed" : "cursor-pointer"}`
                 )}
                 onClick={handleClick}
               />

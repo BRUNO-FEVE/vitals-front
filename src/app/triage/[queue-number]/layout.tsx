@@ -6,12 +6,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="w-screen h-screen bg-brand-primary">
       <QuizProvider>
-        <Header
-          patient={{
-            name: "Bruno Augusto Lopes Fevereiro",
-            dateOfBirth: "10/07/2002",
-          }}
-        />
+        <Header />
 
         {children}
       </QuizProvider>

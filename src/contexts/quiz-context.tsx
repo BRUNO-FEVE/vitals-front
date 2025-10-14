@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { generateQuestionComponent } from "@/utils/generate-question-component";
@@ -7,7 +8,10 @@ import React, {
   useState,
   ReactNode,
   useCallback,
+  useEffect,
 } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 
 export type AnswerValue = string | string[];
 
@@ -56,8 +60,20 @@ interface QuizQueueItem {
   lineage: string[];
 }
 
+interface User {
+  queueNumber: string;
+  name: string;
+  dateOfBirth: number;
+  cpf: string;
+  returnUrl: string;
+}
+
 interface QuizContextType {
+  user: User | undefined;
+  setUser: (user: User) => void;
+
   createList: (questions: QuestionType[]) => void;
+
   quizList: ReactNode[];
   currentIndex: number;
   questions: QuestionType[];
@@ -73,6 +89,9 @@ export function QuizProvider({ children }: { children: ReactNode }) {
   const [quizList, setQuizList] = useState<ReactNode[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [questionTree, setQuestionTree] = useState<QuestionType[]>([]);
+  const [user, setUser] = useState<User | undefined>(undefined);
+
+  const router = useRouter();
 
   const cloneQuestions = useCallback(
     (questions: QuestionType[]): QuestionType[] =>
@@ -137,7 +156,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const next = useCallback(
-    (value: AnswerValue) => {
+    async (value: AnswerValue) => {
       const currentItem = questionQueue[currentIndex];
       const currentQuestion = currentItem?.question;
 
@@ -204,14 +223,66 @@ export function QuizProvider({ children }: { children: ReactNode }) {
       } else {
         console.log(questionTree);
         // Navigation to the end screen can happen here.
+
+        try {
+          // const answers = questionTree
+          //   .flatMap((q) => {
+          //     const collectAnswers = (question: QuestionType): any[] => {
+          //       const base = question.answer
+          //         ? [{ questionId: question.id, answer: question.answer }]
+          //         : [];
+          //       if ("options" in question && question.options) {
+          //         const nested = question.options.flatMap((opt) =>
+          //           opt.nested_questions
+          //             ? opt.nested_questions.flatMap((nq) => collectAnswers(nq))
+          //             : []
+          //         );
+          //         return [...base, ...nested];
+          //       }
+          //       return base;
+          //     };
+          //     return collectAnswers(q);
+          //   })
+          //   .filter((a) => a.answer !== undefined);
+
+          if (!user) return;
+
+          const payload = {
+            hospitalPassword: user?.queueNumber,
+            answers: questionTree,
+          };
+
+          const response = await axios.post(user.returnUrl, payload, {
+            headers: { "Content-Type": "application/json" },
+          });
+
+          const data = (await response.data) as any;
+
+          if (data.success) {
+            console.log("✅ Triage results submitted successfully:", data);
+            router.push("/end"); // ✅ Redirect using Next.js router
+          } else {
+            console.error("❌ Failed to submit triage:", data);
+            alert("Erro ao enviar resultados da triagem. Tente novamente.");
+          }
+        } catch (error) {
+          console.error("🚨 Network or processing error:", error);
+          alert("Erro de rede ao enviar resultados da triagem.");
+        }
       }
     },
     [currentIndex, materializeQuestions, questionQueue, quizList]
   );
 
+  useEffect(() => {
+    console.log(user);
+  }, [user]);
+
   return (
     <QuizContext.Provider
       value={{
+        user,
+        setUser,
         createList,
         quizList,
         currentIndex,

@@ -1,10 +1,10 @@
 "use client";
 
 import { motion, Variants } from "motion/react";
-import React, { ReactNode, useEffect } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import { useQuiz } from "@/contexts/quiz-context";
 import { cn } from "@/lib/utils";
-import { TriagemQuestions } from "./quiz/quiz";
+import { useParams } from "next/navigation";
 
 const anim: Variants = {
   hidden: {
@@ -41,11 +41,49 @@ const anim: Variants = {
 };
 
 export default function Page() {
-  const { createList, quizList, currentIndex } = useQuiz();
+  const { createList, quizList, currentIndex, setUser } = useQuiz();
+  const [error, setError] = useState<string | null>(null);
+
+  const params = useParams();
+  const queueNumber = params["queue-number"];
+
+  const onLoad = async () => {
+    try {
+      const response = await fetch(`/api/patient/${queueNumber}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(errorData.error || "Erro desconhecido ao carregar paciente");
+        return;
+      }
+
+      const data = await response.json();
+      console.log("user: ", data);
+
+      setUser({
+        queueNumber: data.queueNumber,
+        name: data.user.name,
+        cpf: data.user.cpf,
+        dateOfBirth: data.user.dateOfBirth,
+        returnUrl: data.returnUrl,
+      });
+      createList(data.questions);
+
+      console.log("✅ Paciente carregado:", data);
+    } catch (err) {
+      console.error("Erro na requisição:", err);
+      setError("Erro de conexão com o servidor.");
+    }
+  };
 
   useEffect(() => {
-    createList(TriagemQuestions);
-  }, [createList]);
+    onLoad();
+
+    console.log(error);
+  }, []);
 
   return (
     <div
