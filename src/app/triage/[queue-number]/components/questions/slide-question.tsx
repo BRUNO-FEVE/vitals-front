@@ -1,8 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import Slider from "@/components/slider";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import React, { ReactNode, useEffect, useMemo, useState } from "react";
-// import EmergencyButton from "../emergency-button";
 import { Button } from "@/components/button";
 import { MoveRight } from "lucide-react";
 import { useQuiz } from "@/contexts/quiz-context";
@@ -17,10 +16,11 @@ export default function SlideQuestion({
   options,
 }: SlideQuestionProps) {
   const [value, setValue] = useState<string>();
+  const [prevValue, setPrevValue] = useState<string>();
   const [optionsLabel, setOptionsLabels] = useState<string[]>([]);
   const { next } = useQuiz();
-
   const [hasAnimated, setHasAnimated] = useState(false);
+  const [direction, setDirection] = useState<"left" | "right">("right");
 
   const handleSubmit = () => {
     if (value) {
@@ -31,6 +31,23 @@ export default function SlideQuestion({
   useEffect(() => {
     if (value && !hasAnimated) {
       setHasAnimated(true);
+    }
+
+    // Determine direction based on value change
+    if (value && prevValue) {
+      const currentIndex = optionsLabel.indexOf(value);
+      const previousIndex = optionsLabel.indexOf(prevValue);
+
+      if (currentIndex > previousIndex) {
+        setDirection("right"); // Moving right on slider
+      } else if (currentIndex < previousIndex) {
+        setDirection("left"); // Moving left on slider
+      }
+    }
+
+    // Update previous value
+    if (value) {
+      setPrevValue(value);
     }
   }, [value, hasAnimated]);
 
@@ -44,6 +61,11 @@ export default function SlideQuestion({
     });
   }, []);
 
+  // Get the current label based on value
+  const currentLabel = value
+    ? options.find((option) => option.value === value)?.label
+    : null;
+
   return (
     <>
       <motion.div
@@ -56,14 +78,37 @@ export default function SlideQuestion({
         <Slider setValue={setValue} range={optionsLabel} />
         <div className="flex flex-row justify-end items-center">
           {value && (
-            <motion.h1
-              className="h-[80px] flex items-center justify-center w-1/2 font-light font-mono text-xl bg-black text-white px-4 py-4 text-center"
+            <motion.div
+              className="h-[80px] flex items-center justify-center w-1/2 bg-black overflow-hidden relative"
               initial={!hasAnimated ? { x: "100%" } : false}
               animate={{ x: 0 }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
             >
-              {options.filter((option) => option.value === value)[0].label}
-            </motion.h1>
+              <AnimatePresence mode="wait">
+                {currentLabel && (
+                  <motion.h1
+                    key={currentLabel}
+                    className="absolute font-light font-mono text-xl text-white px-4 py-4 text-center w-full"
+                    initial={
+                      !hasAnimated
+                        ? { opacity: 0 }
+                        : direction === "right"
+                        ? { x: 100, opacity: 0 }
+                        : { x: -100, opacity: 0 }
+                    }
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={
+                      direction === "right"
+                        ? { x: -100, opacity: 0 }
+                        : { x: 100, opacity: 0 }
+                    }
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                  >
+                    {currentLabel}
+                  </motion.h1>
+                )}
+              </AnimatePresence>
+            </motion.div>
           )}
           <div className="w-1/2">
             <Button
@@ -82,8 +127,6 @@ export default function SlideQuestion({
           </div>
         </div>
       </motion.div>
-
-      {/* <EmergencyButton /> */}
     </>
   );
 }
