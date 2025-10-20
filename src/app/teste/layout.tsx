@@ -1,10 +1,10 @@
 import React, { ReactNode } from "react";
-import Header from "./components/header";
 import { QuizProvider } from "@/contexts/quiz-context";
+import Header from "../triage/[queue-number]/components/header";
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <div className="w-screen h-screen bg-brand-primary select-none">
+    <div className="w-screen h-screen bg-brand-primary">
       <QuizProvider>
         <Header />
 

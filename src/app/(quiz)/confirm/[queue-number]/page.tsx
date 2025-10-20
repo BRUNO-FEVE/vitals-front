@@ -27,14 +27,19 @@ export default function Page() {
         headers: { "Content-Type": "application/json" },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        setError(errorData.error || "Erro desconhecido ao carregar paciente");
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        setError(data.error || "Erro desconhecido ao carregar paciente");
         return;
       }
 
-      const data = await response.json();
-      setUser(data.user);
+      // Extract user data from the new API response structure
+      const userData = data.data.user;
+      setUser({
+        name: userData.name,
+        dateOfBirth: new Date(userData.dateOfBirth).toISOString(), // Convert timestamp to ISO string
+      });
 
       console.log("✅ Paciente carregado:", data);
     } catch (err) {

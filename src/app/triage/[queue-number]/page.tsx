@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, Variants } from "motion/react";
-import React, { ReactNode, useEffect, useState } from "react";
+import React, { ReactNode, useEffect, useState, useCallback } from "react";
 import { useQuiz } from "@/contexts/quiz-context";
 import { cn } from "@/lib/utils";
 import { useParams } from "next/navigation";
@@ -47,43 +47,48 @@ export default function Page() {
   const params = useParams();
   const queueNumber = params["queue-number"];
 
-  const onLoad = async () => {
+  const onLoad = useCallback(async () => {
     try {
       const response = await fetch(`/api/patient/${queueNumber}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        setError(errorData.error || "Erro desconhecido ao carregar paciente");
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        setError(data.error || "Erro desconhecido ao carregar paciente");
         return;
       }
 
-      const data = await response.json();
       console.log("user: ", data);
 
+      // Extract data from the new API response structure
+      const patientData = data.data;
+
       setUser({
-        queueNumber: data.queueNumber,
-        name: data.user.name,
-        cpf: data.user.cpf,
-        dateOfBirth: data.user.dateOfBirth,
-        returnUrl: data.returnUrl,
+        queueNumber: patientData.queueNumber,
+        name: patientData.user.name,
+        cpf: patientData.user.cpf,
+        dateOfBirth: patientData.user.dateOfBirth,
+        returnUrl: patientData.returnUrl,
       });
-      createList(data.questions);
+      createList(patientData.questions, patientData.vitals);
 
       console.log("✅ Paciente carregado:", data);
     } catch (err) {
       console.error("Erro na requisição:", err);
       setError("Erro de conexão com o servidor.");
     }
-  };
+  }, [queueNumber, createList, setUser]);
 
   useEffect(() => {
     onLoad();
+  }, [onLoad]);
 
+  useEffect(() => {
     console.log(error);
-  }, []);
+  }, [error]);
 
   return (
     <div

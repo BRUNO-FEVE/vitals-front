@@ -1,9 +1,7 @@
-import { motion } from "motion/react";
-import React, { ReactNode, useState } from "react";
-
+import { motion, PanInfo } from "motion/react";
+import React, { ReactNode, useState, useRef } from "react";
 import { Button } from "@/components/button";
 import { QuizOption, useQuiz } from "@/contexts/quiz-context";
-// import EmergencyButton from "../emergency-button";
 
 interface MultiSelectionQuestionProps {
   question: ReactNode;
@@ -16,8 +14,13 @@ export default function MultiSelectionQuestion({
 }: MultiSelectionQuestionProps) {
   const { next } = useQuiz();
   const [selected, setSelected] = useState<string[]>([]);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const toggleOption = (value: string) => {
+    // Prevent toggle when dragging
+    if (isDragging) return;
+
     setSelected((prev) =>
       prev.includes(value)
         ? prev.filter((item) => item !== value)
@@ -33,6 +36,26 @@ export default function MultiSelectionQuestion({
     }
   };
 
+  const handleDragStart = () => {
+    setIsDragging(true);
+  };
+
+  const handleDrag = (
+    _: MouseEvent | TouchEvent | PointerEvent,
+    info: PanInfo
+  ) => {
+    if (scrollContainerRef.current) {
+      const currentScroll = scrollContainerRef.current.scrollTop;
+      const newScroll = currentScroll - info.delta.y;
+      scrollContainerRef.current.scrollTop = newScroll;
+    }
+  };
+
+  const handleDragEnd = () => {
+    // Small delay to prevent click event after drag
+    setTimeout(() => setIsDragging(false), 100);
+  };
+
   return (
     <>
       <div className="flex flex-col gap-2">
@@ -41,30 +64,47 @@ export default function MultiSelectionQuestion({
           * Pode escolher mais de uma
         </p>
       </div>
+
       <div className="relative w-full h-full p-1 pb-20 flex flex-row gap-2 items-end">
         <motion.div
-          className="grid gap-4 w-3/4 h-full py-12 overflow-y-scroll"
+          ref={scrollContainerRef}
+          className="grid gap-4 w-3/4 h-full py-12 overflow-y-scroll scrollbar-hide touch-pan-y"
           initial={{ opacity: 0, y: "10%" }}
           animate={{ opacity: 1, y: "0%" }}
           transition={{ delay: 0.3, duration: 1, ease: "easeInOut" }}
+          style={{
+            scrollBehavior: isDragging ? "auto" : "smooth",
+          }}
         >
-          {options.map((option) => {
-            const isSelected = selected.includes(option.value);
-            return (
-              <button
-                key={option.value}
-                className={`w-full h-20 border border-black transition-colors duration-150 ${
-                  isSelected
-                    ? "bg-black text-white"
-                    : "bg-white hover:bg-black hover:text-white"
-                }`}
-                onClick={() => toggleOption(option.value)}
-              >
-                {option.label}
-              </button>
-            );
-          })}
+          <motion.div
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={0}
+            dragMomentum={false}
+            onDragStart={handleDragStart}
+            onDrag={handleDrag}
+            onDragEnd={handleDragEnd}
+            className="grid gap-4 cursor-grab active:cursor-grabbing"
+          >
+            {options.map((option) => {
+              const isSelected = selected.includes(option.value);
+              return (
+                <button
+                  key={option.value}
+                  className={`w-full h-20 border border-black transition-colors duration-150 select-none ${
+                    isSelected
+                      ? "bg-black text-white"
+                      : "bg-white hover:bg-black hover:text-white"
+                  }`}
+                  onClick={() => toggleOption(option.value)}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </motion.div>
         </motion.div>
+
         <div
           className="absolute inset-0 pointer-events-none w-screen"
           style={{
@@ -72,6 +112,7 @@ export default function MultiSelectionQuestion({
               "linear-gradient(to bottom, white 5%, transparent 15%, transparent 80%, white 100%)",
           }}
         />
+
         <div className="w-[200px] fixed right-5 bottom-5">
           <Button
             label="Continuar"
@@ -83,7 +124,15 @@ export default function MultiSelectionQuestion({
         </div>
       </div>
 
-      {/* <EmergencyButton /> */}
+      <style jsx global>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </>
   );
 }

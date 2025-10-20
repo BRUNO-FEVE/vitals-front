@@ -46,9 +46,31 @@ export const QueueNumberProvider: React.FC<QueueNumberProviderProps> = ({
     }
   };
 
-  const submit = () => {
+  const submit = async () => {
     if (queueNumber.length === 3) {
-      router.push(`/confirm/${queueNumber}`);
+      try {
+        const response = await fetch(`/api/patient/${queueNumber}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          // Dispatch failed-password event
+          window.dispatchEvent(new Event("failed-password"));
+          console.error("❌ Paciente não encontrado ou erro na resposta");
+          return;
+        }
+
+        // Extract user data from the new API response structure
+        router.push(`/confirm/${queueNumber}`);
+        console.log("✅ Paciente carregado:", data);
+      } catch (err) {
+        // Dispatch failed-password event on any error
+        window.dispatchEvent(new Event("failed-password"));
+        console.error("❌ Erro na requisição:", err);
+      }
     }
   };
 

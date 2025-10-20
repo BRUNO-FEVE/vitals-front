@@ -2,6 +2,7 @@
 "use client";
 
 import { generateQuestionComponent } from "@/utils/generate-question-component";
+import VitalsTemplate from "@/app/triage/[queue-number]/components/questions/vitals-template";
 import React, {
   createContext,
   useContext,
@@ -11,9 +12,24 @@ import React, {
   useEffect,
 } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+import Pressure from "@/app/triage/[queue-number]/components/questions/pressure";
+import Height from "@/app/triage/[queue-number]/components/questions/height";
 
 export type AnswerValue = string | string[];
+
+// Vitals types
+export type VitalsType =
+  | "temperature"
+  | "heartbeat/oxygen"
+  | "pressure"
+  | "weight"
+  | "height";
+
+export interface VitalsItem {
+  id: string;
+  type: VitalsType;
+  value?: string; // The measured value
+}
 
 // Estrutura de uma Pergunta (Forward declaration para permitir aninhamento)
 export interface TriagemQuestion {
@@ -72,11 +88,12 @@ interface QuizContextType {
   user: User | undefined;
   setUser: (user: User) => void;
 
-  createList: (questions: QuestionType[]) => void;
+  createList: (questions: QuestionType[], vitals: string[]) => void;
 
   quizList: ReactNode[];
   currentIndex: number;
   questions: QuestionType[];
+  vitals: VitalsItem[];
 
   prev: () => void;
   next: (value: AnswerValue) => void;
@@ -89,6 +106,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
   const [quizList, setQuizList] = useState<ReactNode[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [questionTree, setQuestionTree] = useState<QuestionType[]>([]);
+  const [vitalsList, setVitalsList] = useState<VitalsItem[]>([]);
   const [user, setUser] = useState<User | undefined>(undefined);
 
   const router = useRouter();
@@ -139,13 +157,83 @@ export function QuizProvider({ children }: { children: ReactNode }) {
   );
 
   const createList = useCallback(
-    (questions: QuestionType[]) => {
+    (questions: QuestionType[], vitals: string[]) => {
       const clonedQuestions = cloneQuestions(questions);
       const { queue, components } = materializeQuestions(clonedQuestions);
 
+      // Create vitals items from the vitals array
+      console.log("Creating vitals items from:", vitals);
+      const vitalsItems: VitalsItem[] = vitals.map((vital, index) => {
+        // Validate and normalize vital type
+        const validVitals: VitalsType[] = [
+          "temperature",
+          "heartbeat/oxygen",
+          "pressure",
+          "weight",
+          "height",
+        ];
+
+        const normalizedVital = validVitals.includes(vital as VitalsType)
+          ? (vital as VitalsType)
+          : "temperature"; // fallback to temperature if invalid
+
+        return {
+          id: `vital_${index}`,
+          type: normalizedVital,
+          value: undefined,
+        };
+      });
+      console.log("Created vitals items:", vitalsItems);
+
+      // Create vitals components
+      const vitalsComponents: ReactNode[] = vitalsItems.map((vital, index) => {
+        if (vital.type === "pressure") {
+          return <Pressure key={vital.id} />;
+        }
+
+        if (vital.type === "height") {
+          return <Height key={vital.id} />;
+        }
+
+        if (vital.type !== "weight") {
+          return (
+            <VitalsTemplate key={vital.id} index={index} type={vital.type} />
+          );
+        }
+        return null;
+      });
+
+      // Interleave vitals and questions components
+      const combinedComponents: ReactNode[] = [];
+      const combinedQueue: QuizQueueItem[] = [];
+
+      // Add vitals first, then questions
+      vitalsItems.forEach((vital, index) => {
+        if (vital.type === "weight") return;
+
+        combinedComponents.push(vitalsComponents[index]);
+        // Add a dummy queue item for vitals to maintain index alignment
+        combinedQueue.push({
+          question: {
+            id: vital.id,
+            type: "yes_no" as const, // Dummy type for vitals
+            question: `Vital: ${vital.type}`,
+            answer: undefined,
+          },
+          lineage: [],
+        });
+      });
+
+      // Add questions after vitals
+      components.forEach((component, index) => {
+        combinedComponents.push(component);
+        combinedQueue.push(queue[index]);
+      });
+
       setQuestionTree(clonedQuestions);
-      setQuestionQueue(queue);
-      setQuizList(components);
+      setVitalsList(vitalsItems);
+      setQuestionQueue(combinedQueue);
+      setQuizList(combinedComponents);
       setCurrentIndex(0);
     },
     [cloneQuestions, materializeQuestions]
@@ -164,99 +252,127 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      currentQuestion.answer = value;
-      let updatedQueue = questionQueue.map((item) => ({ ...item }));
-      let updatedList = [...quizList];
+      // Handle vitals differently - they don't have nested questions
+      const isVital = currentQuestion.id.startsWith("vital_");
 
-      const removalStart = currentIndex + 1;
-      while (
-        removalStart < updatedQueue.length &&
-        updatedQueue[removalStart].lineage.includes(currentQuestion.id)
-      ) {
-        const candidate = updatedQueue[removalStart];
-        candidate.question.answer = undefined;
-        updatedQueue.splice(removalStart, 1);
-        updatedList.splice(removalStart, 1);
-      }
-
-      let nestedQuestions: QuestionType[] | undefined;
-
-      if ("options" in currentQuestion) {
-        const matchedOption = currentQuestion.options?.find(
-          (option) => option.value === value
+      if (isVital) {
+        // Update vitals value
+        const vitalIndex = parseInt(currentQuestion.id.split("_")[1]);
+        setVitalsList((prev) =>
+          prev.map((vital, index) =>
+            index === vitalIndex ? { ...vital, value: value as string } : vital
+          )
         );
+      } else {
+        // Handle regular questions
+        currentQuestion.answer = value;
+        let updatedQueue = questionQueue.map((item) => ({ ...item }));
+        let updatedList = [...quizList];
 
-        nestedQuestions = matchedOption?.nested_questions;
-      }
-
-      if (nestedQuestions && nestedQuestions.length > 0) {
-        const lineage = [...currentItem.lineage, currentQuestion.id];
-        const materializedNested = materializeQuestions(
-          nestedQuestions,
-          lineage
-        );
-
-        if (materializedNested.queue.length > 0) {
-          updatedQueue = [
-            ...updatedQueue.slice(0, removalStart),
-            ...materializedNested.queue,
-            ...updatedQueue.slice(removalStart),
-          ];
-          updatedList = [
-            ...updatedList.slice(0, removalStart),
-            ...materializedNested.components,
-            ...updatedList.slice(removalStart),
-          ];
+        const removalStart = currentIndex + 1;
+        while (
+          removalStart < updatedQueue.length &&
+          updatedQueue[removalStart].lineage.includes(currentQuestion.id)
+        ) {
+          const candidate = updatedQueue[removalStart];
+          candidate.question.answer = undefined;
+          updatedQueue.splice(removalStart, 1);
+          updatedList.splice(removalStart, 1);
         }
+
+        let nestedQuestions: QuestionType[] | undefined;
+
+        if ("options" in currentQuestion) {
+          const matchedOption = currentQuestion.options?.find(
+            (option) => option.value === value
+          );
+
+          nestedQuestions = matchedOption?.nested_questions;
+        }
+
+        if (nestedQuestions && nestedQuestions.length > 0) {
+          const lineage = [...currentItem.lineage, currentQuestion.id];
+          const materializedNested = materializeQuestions(
+            nestedQuestions,
+            lineage
+          );
+
+          if (materializedNested.queue.length > 0) {
+            updatedQueue = [
+              ...updatedQueue.slice(0, removalStart),
+              ...materializedNested.queue,
+              ...updatedQueue.slice(removalStart),
+            ];
+            updatedList = [
+              ...updatedList.slice(0, removalStart),
+              ...materializedNested.components,
+              ...updatedList.slice(removalStart),
+            ];
+          }
+        }
+
+        setQuestionQueue(updatedQueue);
+        setQuizList(updatedList);
+        setQuestionTree((prev) => [...prev]);
       }
 
-      setQuestionQueue(updatedQueue);
-      setQuizList(updatedList);
-      setQuestionTree((prev) => [...prev]);
-
-      if (currentIndex < updatedList.length - 1) {
+      if (currentIndex < quizList.length - 1) {
         setCurrentIndex((prevIndex) =>
-          Math.min(prevIndex + 1, updatedList.length - 1)
+          Math.min(prevIndex + 1, quizList.length - 1)
         );
 
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
-        console.log(questionTree);
+        console.log("Question tree:", questionTree);
+        console.log("Vitals list:", vitalsList);
         // Navigation to the end screen can happen here.
 
         try {
-          // const answers = questionTree
-          //   .flatMap((q) => {
-          //     const collectAnswers = (question: QuestionType): any[] => {
-          //       const base = question.answer
-          //         ? [{ questionId: question.id, answer: question.answer }]
-          //         : [];
-          //       if ("options" in question && question.options) {
-          //         const nested = question.options.flatMap((opt) =>
-          //           opt.nested_questions
-          //             ? opt.nested_questions.flatMap((nq) => collectAnswers(nq))
-          //             : []
-          //         );
-          //         return [...base, ...nested];
-          //       }
-          //       return base;
-          //     };
-          //     return collectAnswers(q);
-          //   })
-          //   .filter((a) => a.answer !== undefined);
-
           if (!user) return;
+
+          // Collect all answers from questions
+          const collectAnswers = (question: QuestionType): any[] => {
+            const base = question.answer
+              ? [{ questionId: question.id, answer: question.answer }]
+              : [];
+            if ("options" in question && question.options) {
+              const nested = question.options.flatMap((opt) =>
+                opt.nested_questions
+                  ? opt.nested_questions.flatMap((nq) => collectAnswers(nq))
+                  : []
+              );
+              return [...base, ...nested];
+            }
+            return base;
+          };
+
+          const questionAnswers = questionTree
+            .flatMap((q) => collectAnswers(q))
+            .filter((a) => a.answer !== undefined);
+
+          // Add vitals as answers
+          const vitalsAnswers = vitalsList
+            .filter((vital) => vital.value !== undefined)
+            .map((vital) => ({
+              questionId: vital.id,
+              answer: vital.value,
+            }));
+
+          const allAnswers = [...vitalsAnswers, ...questionAnswers];
 
           const payload = {
             hospitalPassword: user?.queueNumber,
-            answers: questionTree,
+            answers: allAnswers,
           };
 
-          const response = await axios.post(user.returnUrl, payload, {
+          // Use the new API endpoint
+          const response = await fetch("/api/submitTriage", {
+            method: "POST",
             headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
           });
 
-          const data = (await response.data) as any;
+          const data = await response.json();
 
           if (data.success) {
             console.log("✅ Triage results submitted successfully:", data);
@@ -271,7 +387,16 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         }
       }
     },
-    [currentIndex, materializeQuestions, questionQueue, quizList]
+    [
+      currentIndex,
+      materializeQuestions,
+      questionQueue,
+      quizList,
+      questionTree,
+      vitalsList,
+      user,
+      router,
+    ]
   );
 
   useEffect(() => {
@@ -287,6 +412,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         quizList,
         currentIndex,
         questions: questionTree,
+        vitals: vitalsList,
         prev,
         next,
       }}

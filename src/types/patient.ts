@@ -1,4 +1,4 @@
-// Types for the new patient endpoint and hospital integration
+// Types for the Triage Web Application API
 
 export interface PatientUser {
   name: string;
@@ -7,40 +7,65 @@ export interface PatientUser {
 }
 
 export interface QuestionOption {
-  id: string;
+  value: string;
   label: string;
+  nested_questions?: QuestionType[];
 }
 
-export interface PatientQuestion {
+export interface QuestionType {
   id: string;
-  type: "yes_no" | "single_selection" | "multi_selection" | "slider";
+  type: "single_selection" | "multi_selection" | "yes_no" | "slider";
   question: string;
-  options: QuestionOption[];
+  options?: QuestionOption[];
 }
 
 export interface NewPatientRequest {
   hospitalPassword: string;
   user: PatientUser;
-  questions: PatientQuestion[];
+  vitals: string[]; // e.g. ["temperature", "heartbeat/oxygen", "pressure", "weight"]
+  questions: QuestionType[];
   returnUrl: string;
 }
 
 export interface StoredPatientData {
   hospitalPassword: string;
   user: PatientUser;
-  questions: PatientQuestion[];
+  vitals: string[];
+  questions: QuestionType[];
   returnUrl: string;
   createdAt: number; // Unix timestamp
 }
 
+export interface TriageAnswer {
+  questionId: string;
+  answer: string | string[];
+}
+
 export interface TriageResult {
-  patientId: string; // CPF or hospital password
-  answers: Array<{
-    questionId: string;
-    answer: string | string[];
-  }>;
+  patientId: string; // CPF
+  answers: TriageAnswer[];
   completedAt: number; // Unix timestamp
 }
+
+export interface SubmitTriageRequest {
+  hospitalPassword: string;
+  answers: TriageAnswer[];
+}
+
+// API Response types
+export interface ApiSuccessResponse<T = unknown> {
+  success: true;
+  data: T;
+  message?: string;
+}
+
+export interface ApiErrorResponse {
+  success: false;
+  error: string;
+  details?: string;
+}
+
+export type ApiResponse<T = unknown> = ApiSuccessResponse<T> | ApiErrorResponse;
 
 // In-memory storage type
 export type PatientStorage = Map<string, StoredPatientData>;
