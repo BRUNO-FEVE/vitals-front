@@ -5,12 +5,8 @@ import { motion } from "motion/react"; // Note: changed 'motion/react' to 'frame
 import React from "react";
 import { ChevronLeft } from "lucide-react";
 
-interface HeaderProps {
-  patient: { name: string; dateOfBirth: string };
-}
-
-export default function Header({ patient }: HeaderProps) {
-  const { currentIndex, quizList, prev } = useQuiz();
+export default function Header() {
+  const { currentIndex, quizList, prev, user } = useQuiz();
 
   // --- PROGRESS BAR LOGIC ---
   // Assuming currentIndex is 0-indexed (0, 1, 2, ...)
@@ -21,6 +17,10 @@ export default function Header({ patient }: HeaderProps) {
   // Calculate the percentage width for the progress bar
   const progressWidth = `${(currentStep / totalSteps) * 100}%`;
   // --- END LOGIC ---
+
+  const formattedDate = user
+    ? new Date(user.dateOfBirth).toLocaleDateString("pt-BR")
+    : "Carregando...";
 
   return (
     <motion.div
@@ -66,10 +66,8 @@ export default function Header({ patient }: HeaderProps) {
         </button>
 
         <div className="flex flex-col gap-0">
-          <h1 className="text-white">{patient.name}</h1>
-          <p className="text-sm font-sans font-extralight">
-            {patient.dateOfBirth}
-          </p>
+          <h1 className="text-white">{user ? user.name : "Carregando..."}</h1>
+          <p className="text-sm font-sans font-extralight">{formattedDate}</p>
         </div>
       </div>
     </motion.div>

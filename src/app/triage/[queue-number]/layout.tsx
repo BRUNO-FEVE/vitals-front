@@ -4,14 +4,9 @@ import { QuizProvider } from "@/contexts/quiz-context";
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <div className="w-screen h-screen bg-brand-primary">
+    <div className="w-screen h-screen bg-brand-primary select-none">
       <QuizProvider>
-        <Header
-          patient={{
-            name: "Bruno Augusto Lopes Fevereiro",
-            dateOfBirth: "10/07/2002",
-          }}
-        />
+        <Header />
 
         {children}
       </QuizProvider>

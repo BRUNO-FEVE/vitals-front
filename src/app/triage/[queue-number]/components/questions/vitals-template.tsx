@@ -6,16 +6,20 @@ import { cn } from "@/lib/utils";
 import { useQuiz } from "@/contexts/quiz-context";
 import { motion } from "motion/react";
 
+type Vitals = "temperature" | "heartbeat/oxygen" | "pressure" | "weight";
 interface VitalsTemplateProps {
   index: number;
-  title: ReactNode;
+  type: Vitals;
 }
 
-export default function VitalsTemplate({ index, title }: VitalsTemplateProps) {
+export default function VitalsTemplate({ index, type }: VitalsTemplateProps) {
   const [progressPercentage, setProgressPercentage] = useState(0);
   const warning = false;
   const { next, currentIndex } = useQuiz();
   const isActive = currentIndex === index;
+
+  // Debug logging
+  console.log("VitalsTemplate rendered with:", { index, type, isActive });
 
   useEffect(() => {
     if (!isActive) {
@@ -44,23 +48,51 @@ export default function VitalsTemplate({ index, title }: VitalsTemplateProps) {
     return () => clearInterval(id);
   }, [next, isActive]);
 
+  const variants: Record<Vitals, { title: ReactNode; img: string }> = {
+    temperature: {
+      title: (
+        <>
+          Medição de <br />
+          Temperatura Corporal
+        </>
+      ),
+      img: "/temperature.png",
+    },
+    "heartbeat/oxygen": {
+      title: "Monitorando Batimentos e Oxigenação",
+      img: "/heart-beat.png",
+    },
+    pressure: { title: "Aferindo Pressão Arterial", img: "/pressure.png" },
+    weight: { title: "Verificando Peso Corporal", img: "/weight.png" },
+  };
+
+  const { title, img } = variants[type] || { title: `Medição de ${type}` };
+
   return (
     <div className="w-full h-full flex flex-row">
-      <div className="pl-[100.5px] flex-grow bg-[url('/heart-beat.png')] bg-contain bg-start bg-no-repeat mt-7">
+      <div
+        className="pl-[100.5px] flex-grow mt-7 bg-contain bg-start bg-no-repeat"
+        style={{ backgroundImage: `url(${img})` }}
+      >
         <h1
           className={cn(
-            warning ? "text-brand-accent" : "text-transparent",
+            warning ? "text-brand-accent" : "text-transparent hidden",
             "font-mono text-sm pl-3 pb-3"
           )}
         >
           SENSOR PERDEU SINAL, POR FAVOR SE AJUSTE NA <br /> CADEIRA OU CHAME A
           INFERMEIRA
         </h1>
+        <p className="font-mono text-xs pl-5 py-5">
+          Por favor, aguarde{" "}
+          <span className="font-bold text-brand-accent">parado</span> enquanto
+          realizamos a medição...
+        </p>
 
         <div
           className={cn(
             warning ? "border-brand-accent" : "border-black",
-            "h-[90px] w-4/5 bg-white border border-l-0"
+            "h-[90px] w-full bg-white border border-l-0"
           )}
         >
           <motion.div
@@ -75,11 +107,6 @@ export default function VitalsTemplate({ index, title }: VitalsTemplateProps) {
         </div>
 
         <h1 className="font-bold text-3xl pl-5 pt-3">{title}</h1>
-        <p className="font-mono text-xs pl-5 pt-6">
-          Por favor, aguarde{" "}
-          <span className="font-bold text-brand-accent">parado</span> enquanto
-          realizamos a medição...
-        </p>
       </div>
 
       {/* <EmergencyButton /> */}

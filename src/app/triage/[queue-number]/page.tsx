@@ -1,10 +1,10 @@
 "use client";
 
 import { motion, Variants } from "motion/react";
-import React, { ReactNode, useEffect } from "react";
+import React, { ReactNode, useEffect, useState, useCallback } from "react";
 import { useQuiz } from "@/contexts/quiz-context";
 import { cn } from "@/lib/utils";
-import { TriagemQuestions } from "./quiz/quiz";
+import { useParams } from "next/navigation";
 
 const anim: Variants = {
   hidden: {
@@ -41,11 +41,54 @@ const anim: Variants = {
 };
 
 export default function Page() {
-  const { createList, quizList, currentIndex } = useQuiz();
+  const { createList, quizList, currentIndex, setUser } = useQuiz();
+  const [error, setError] = useState<string | null>(null);
+
+  const params = useParams();
+  const queueNumber = params["queue-number"];
+
+  const onLoad = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/patient/${queueNumber}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        setError(data.error || "Erro desconhecido ao carregar paciente");
+        return;
+      }
+
+      console.log("user: ", data);
+
+      // Extract data from the new API response structure
+      const patientData = data.data;
+
+      setUser({
+        queueNumber: patientData.queueNumber,
+        name: patientData.user.name,
+        cpf: patientData.user.cpf,
+        dateOfBirth: patientData.user.dateOfBirth,
+        returnUrl: patientData.returnUrl,
+      });
+      createList(patientData.questions, patientData.vitals);
+
+      console.log("✅ Paciente carregado:", data);
+    } catch (err) {
+      console.error("Erro na requisição:", err);
+      setError("Erro de conexão com o servidor.");
+    }
+  }, [queueNumber, createList, setUser]);
 
   useEffect(() => {
-    createList(TriagemQuestions);
-  }, [createList]);
+    onLoad();
+  }, [onLoad]);
+
+  useEffect(() => {
+    console.log(error);
+  }, [error]);
 
   return (
     <div
