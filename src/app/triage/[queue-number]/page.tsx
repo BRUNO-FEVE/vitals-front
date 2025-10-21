@@ -42,7 +42,7 @@ const anim: Variants = {
 
 export default function Page() {
   const { createList, quizList, currentIndex, setUser } = useQuiz();
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
 
   const params = useParams();
   const queueNumber = params["queue-number"];
@@ -85,10 +85,6 @@ export default function Page() {
   useEffect(() => {
     onLoad();
   }, [onLoad]);
-
-  useEffect(() => {
-    console.log(error);
-  }, [error]);
 
   return (
     <div
