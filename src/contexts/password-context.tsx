@@ -59,7 +59,7 @@ export const QueueNumberProvider: React.FC<QueueNumberProviderProps> = ({
         if (!response.ok || !data.success) {
           // Dispatch failed-password event
           window.dispatchEvent(new Event("failed-password"));
-          console.error("❌ Paciente não encontrado ou erro na resposta");
+          console.log("❌ Paciente não encontrado ou erro na resposta");
           return;
         }
 
@@ -69,7 +69,7 @@ export const QueueNumberProvider: React.FC<QueueNumberProviderProps> = ({
       } catch (err) {
         // Dispatch failed-password event on any error
         window.dispatchEvent(new Event("failed-password"));
-        console.error("❌ Erro na requisição:", err);
+        console.log("❌ Erro na requisição:", err);
       }
     }
   };

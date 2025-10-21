@@ -58,35 +58,46 @@ export function validateQuestions(questions: QuestionType[]): boolean {
 }
 
 export function validateNewPatientRequest(
-  body: any
+  body: unknown
 ): body is NewPatientRequest {
+  if (!body || typeof body !== "object") return false;
+
+  const obj = body as Record<string, unknown>;
+
   return (
-    body &&
-    typeof body.hospitalPassword === "string" &&
-    body.user &&
-    typeof body.user.name === "string" &&
-    typeof body.user.dateOfBirth === "number" &&
-    typeof body.user.cpf === "string" &&
-    Array.isArray(body.vitals) &&
-    typeof body.returnUrl === "string" &&
-    validateQuestions(body.questions) &&
-    validateHospitalPassword(body.hospitalPassword) &&
-    validateUrl(body.returnUrl)
+    typeof obj.hospitalPassword === "string" &&
+    obj.user !== null &&
+    obj.user !== undefined &&
+    typeof obj.user === "object" &&
+    typeof (obj.user as Record<string, unknown>).name === "string" &&
+    typeof (obj.user as Record<string, unknown>).dateOfBirth === "number" &&
+    typeof (obj.user as Record<string, unknown>).cpf === "string" &&
+    Array.isArray(obj.vitals) &&
+    typeof obj.returnUrl === "string" &&
+    Array.isArray(obj.questions) &&
+    validateQuestions(obj.questions as QuestionType[]) &&
+    validateHospitalPassword(obj.hospitalPassword) &&
+    validateUrl(obj.returnUrl)
   );
 }
 
 export function validateSubmitTriageRequest(
-  body: any
+  body: unknown
 ): body is SubmitTriageRequest {
+  if (!body || typeof body !== "object") return false;
+
+  const obj = body as Record<string, unknown>;
+
   return (
-    body &&
-    typeof body.hospitalPassword === "string" &&
-    Array.isArray(body.answers) &&
-    validateHospitalPassword(body.hospitalPassword) &&
-    body.answers.every(
-      (answer: any) => answer.questionId && answer.answer !== undefined
+    typeof obj.hospitalPassword === "string" &&
+    Array.isArray(obj.answers) &&
+    validateHospitalPassword(obj.hospitalPassword) &&
+    obj.answers.every(
+      (answer: unknown) =>
+        typeof answer === "object" &&
+        answer !== null &&
+        "questionId" in answer &&
+        "answer" in answer
     )
   );
 }
-
-
