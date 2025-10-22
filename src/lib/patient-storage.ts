@@ -4,10 +4,12 @@ import {
   TriageResult,
 } from "@/types/patient";
 
-// In-memory storage for patient data
+// Global storage for patient data
 // In a production environment, this would be replaced with a database
+const globalStorage: PatientStorage = new Map();
+
 class PatientStorageService {
-  private storage: PatientStorage = new Map();
+  private storage: PatientStorage = globalStorage;
   private readonly MAX_STORAGE_AGE = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
   /**
@@ -39,7 +41,8 @@ class PatientStorageService {
    * @returns The stored patient data or null if not found
    */
   getPatient(hospitalPassword: string): StoredPatientData | null {
-    console.log(this.storage);
+    console.log("Storage contents:", Array.from(this.storage.keys()));
+    console.log("Looking for hospital password:", hospitalPassword);
 
     const patientData = this.storage.get(hospitalPassword);
 
