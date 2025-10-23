@@ -1,11 +1,11 @@
 import { NextRequest } from "next/server";
-import { patientStorage } from "@/lib/patient-storage";
 import { validateNewPatientRequest } from "@/lib/validation";
 import {
   createJsonResponse,
   createErrorResponse,
   handleCorsOptions,
 } from "@/lib/cors";
+import { collection } from "@/lib/mongodb";
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,7 +23,8 @@ export async function POST(request: NextRequest) {
     const { hospitalPassword, user, vitals, questions, returnUrl } = body;
 
     // Check if patient data already exists for this hospital password
-    const existingPatient = patientStorage.getPatient(hospitalPassword);
+    const existingPatient = await collection.findOne({ hospitalPassword });
+
     if (existingPatient) {
       return createErrorResponse(
         "Patient data already exists for this hospital password",
@@ -31,13 +32,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Store the patient data
-    patientStorage.storePatient(hospitalPassword, {
+    // Store the patient data in MongoDB
+    const patientData = {
+      hospitalPassword,
       user,
       vitals,
       questions,
       returnUrl,
-    });
+      createdAt: new Date(),
+    };
+
+    const result = await collection.insertOne(patientData);
 
     // Return success response
     return createJsonResponse(
@@ -47,6 +52,7 @@ export async function POST(request: NextRequest) {
         questionsCount: questions.length,
         vitalsCount: vitals.length,
         returnUrl,
+        _id: result.insertedId,
       },
       201,
       "Patient data stored successfully"

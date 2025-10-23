@@ -6,6 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { AnimatedText } from "@/components/animated-text";
 import { AnimatePresence, motion, Variants } from "motion/react";
+import axios from "axios";
 
 export default function Page() {
   const [user, setUser] = useState<
@@ -22,14 +23,13 @@ export default function Page() {
 
   const onLoad = async () => {
     try {
-      const response = await fetch(`/api/patient/${queueNumber}`, {
-        method: "GET",
+      const response = await axios.get(`/api/patient/${queueNumber}`, {
         headers: { "Content-Type": "application/json" },
       });
 
-      const data = await response.json();
+      const data = await response.data;
 
-      if (!response.ok || !data.success) {
+      if (!data.success) {
         setError(data.error || "Erro desconhecido ao carregar paciente");
         return;
       }

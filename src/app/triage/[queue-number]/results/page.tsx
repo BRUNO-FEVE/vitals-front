@@ -123,11 +123,12 @@ export default function Page() {
       console.log("Submitting answers:", allAnswers);
 
       // Submit to API
-      const response = await axios.post(
-        "/api/submitTriage",
+      const response = await axios.put(
+        `/api/patient/${user.queueNumber}`,
         {
           hospitalPassword: user.queueNumber, // Using queueNumber as hospitalPassword
           answers: allAnswers,
+          vitals: vitals,
         },
         {
           headers: {

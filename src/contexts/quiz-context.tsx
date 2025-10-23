@@ -1,7 +1,6 @@
 "use client";
 
 import { generateQuestionComponent } from "@/utils/generate-question-component";
-import VitalsTemplate from "@/app/triage/[queue-number]/components/questions/vitals-template";
 import React, {
   createContext,
   useContext,
@@ -11,11 +10,14 @@ import React, {
   useEffect,
 } from "react";
 import { useRouter } from "next/navigation";
-import Pressure from "@/app/triage/[queue-number]/components/questions/pressure";
-import Height from "@/app/triage/[queue-number]/components/questions/height";
+import Pressure from "@/app/triage/[queue-number]/components/vitals/pressure";
+import Height from "@/app/triage/[queue-number]/components/vitals/height";
 import { MOCK_USER } from "@/mock-data/user";
 import { MOCK_VITALS } from "@/mock-data/vitals";
 import { MOCK_QUESTIONS } from "@/mock-data/questions";
+import TemperatureVitals from "@/app/triage/[queue-number]/components/vitals/temperature";
+import WeightVitals from "@/app/triage/[queue-number]/components/vitals/weight";
+import HeartbeatOxygenVitals from "@/app/triage/[queue-number]/components/vitals/heartbeat-oxygen";
 
 export type AnswerValue = string | string[];
 
@@ -183,20 +185,21 @@ export function QuizProvider({ children }: { children: ReactNode }) {
       console.log("Created vitals items:", vitalsItems);
 
       const vitalsComponents: ReactNode[] = vitalsItems.map((vital, index) => {
-        if (vital.type === "pressure") {
-          return <Pressure key={vital.id} />;
-        }
+        switch (vital.type) {
+          case "pressure":
+            return <Pressure key={vital.id} />;
+          case "height":
+            return <Height key={vital.id} />;
+          case "temperature":
+            return <TemperatureVitals key={vital.id} index={index} />;
+          case "weight":
+            return <WeightVitals key={vital.id} index={index} />;
+          case "heartbeat/oxygen":
+            return <HeartbeatOxygenVitals key={vital.id} index={index} />;
 
-        if (vital.type === "height") {
-          return <Height key={vital.id} />;
+          default:
+            return null;
         }
-
-        if (vital.type !== "weight") {
-          return (
-            <VitalsTemplate key={vital.id} index={index} type={vital.type} />
-          );
-        }
-        return null;
       });
 
       const combinedComponents: ReactNode[] = [];

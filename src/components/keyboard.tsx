@@ -21,7 +21,7 @@ const numberLayout: KeyToken[][] = [
 
 // Letter layout
 const letterLayout: KeyToken[][] = [
-  ["shift", "A", "B", "C", "delete"],
+  ["shift", "O", "B", "C", "delete"],
   [null, "D", "E", "F", null],
   ["G", "H", "I", "J", "submit"],
 ];
