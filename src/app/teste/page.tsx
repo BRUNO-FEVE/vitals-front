@@ -1,6 +1,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import Height from "../triage/[queue-number]/components/questions/height";
+import Height from "../triage/[queue-number]/components/vitals/height";
 
 export default function Page() {
   return (
