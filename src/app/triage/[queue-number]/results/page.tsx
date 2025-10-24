@@ -51,11 +51,6 @@ const formatVitalValue = (type: VitalsType, value?: string): string => {
   }
 };
 
-interface TriageAnswer {
-  questionId: string;
-  answer: string | string[];
-}
-
 export default function Page() {
   const { user, vitals, questions } = useQuiz();
   const router = useRouter();
@@ -75,59 +70,12 @@ export default function Page() {
     setSubmitError(null);
 
     try {
-      // Collect all answers from questions and vitals
-      const allAnswers: TriageAnswer[] = [];
-
-      // Add vitals answers
-      vitals.forEach((vital) => {
-        if (vital.value) {
-          allAnswers.push({
-            questionId: vital.id,
-            answer: vital.value,
-          });
-        }
-      });
-
-      // Add question answers (recursively collect from nested questions)
-      const collectQuestionAnswers = (
-        questions: QuestionType[]
-      ): TriageAnswer[] => {
-        const answers: TriageAnswer[] = [];
-
-        questions.forEach((question) => {
-          if (question.answer !== undefined) {
-            answers.push({
-              questionId: question.id,
-              answer: question.answer,
-            });
-          }
-
-          // Check for nested questions in options
-          if (question.options) {
-            question.options.forEach((option) => {
-              if (option.nested_questions) {
-                answers.push(
-                  ...collectQuestionAnswers(option.nested_questions)
-                );
-              }
-            });
-          }
-        });
-
-        return answers;
-      };
-
-      const questionAnswers = collectQuestionAnswers(questions);
-      allAnswers.push(...questionAnswers);
-
-      console.log("Submitting answers:", allAnswers);
-
       // Submit to API
       const response = await axios.put(
         `/api/patient/${user.queueNumber}`,
         {
           hospitalPassword: user.queueNumber, // Using queueNumber as hospitalPassword
-          answers: allAnswers,
+          questions: questions,
           vitals: vitals,
         },
         {
@@ -163,6 +111,77 @@ export default function Page() {
     ? new Date(user.dateOfBirth).toLocaleDateString("pt-BR")
     : "";
 
+  // Recursive function to render questions and their nested questions
+  const renderQuestion = (question: QuestionType, level: number = 0) => {
+    if (!question.answer) {
+      return null;
+    }
+
+    const indentClass = level > 0 ? "ml-6 border-l-2 border-gray-200 pl-4" : "";
+
+    let questionElement;
+
+    if (question.type === "yes_no") {
+      questionElement = (
+        <div
+          key={question.id}
+          className={`flex flex-row justify-between ${indentClass}`}
+        >
+          <span className="opacity-50">{question.question}</span>
+          <span className="font-mono">
+            {question.answer === "yes" ? "Sim" : "Não"}
+          </span>
+        </div>
+      );
+    } else if (
+      question.type === "single_selection" ||
+      question.type === "slider"
+    ) {
+      const selectedOption = question.options?.find(
+        (option) => option.value === question.answer
+      );
+
+      questionElement = (
+        <div key={question.id} className={`flex flex-col gap-1 ${indentClass}`}>
+          <span className="opacity-50">{question.question}</span>
+          <span className="font-mono">
+            {selectedOption?.label || question.answer}
+          </span>
+        </div>
+      );
+    } else if (question.type === "multi_selection") {
+      const answers = Array.isArray(question.answer)
+        ? question.answer
+        : [question.answer];
+      const selectedLabels = question.options
+        ?.filter((option) => answers.includes(option.value))
+        .map((option) => option.label);
+
+      questionElement = (
+        <div key={question.id} className={`flex flex-col gap-1 ${indentClass}`}>
+          <span className="opacity-50">{question.question}</span>
+          <span className="font-mono">
+            {selectedLabels?.join(", ") || question.answer}
+          </span>
+        </div>
+      );
+    }
+
+    // Find nested questions based on the selected answer
+    const selectedOption = question.options?.find(
+      (option) => option.value === question.answer
+    );
+
+    const nestedQuestions = selectedOption?.nested_questions || [];
+
+    return (
+      <React.Fragment key={question.id}>
+        {questionElement}
+        {nestedQuestions.map((nestedQ) => renderQuestion(nestedQ, level + 1))}
+      </React.Fragment>
+    );
+  };
+
   return (
     <div className="w-full h-screen flex flex-row">
       <div className="bg-white w-2/3 h-full flex flex-col gap-10 py-4 px-12 pr-20 overflow-y-scroll">
@@ -175,39 +194,7 @@ export default function Page() {
           </p>
         </div>
 
-        {questions.map((question) => {
-          if (!question.answer) {
-            return;
-          }
-
-          if (question.type !== "yes_no") {
-            return (
-              <div key={question.id} className="flex flex-row justify-between">
-                <span className="opacity-50 whitespace-nowrap">
-                  {question.question}
-                </span>
-                <p className="font-mono">
-                  {
-                    question.options?.filter(
-                      (option) => option.value === question.answer
-                    )[0].label
-                  }
-                </p>
-              </div>
-            );
-          }
-
-          if (question.type === "yes_no") {
-            return (
-              <div key={question.id} className="flex flex-row justify-between">
-                <span className="opacity-50">{question.question}</span>
-                <span className="font-mono">
-                  {question.answer === "yes" ? "Sim" : "Não"}
-                </span>
-              </div>
-            );
-          }
-        })}
+        {questions.map((question) => renderQuestion(question))}
 
         <div className="flex flex-col gap-4">
           {submitError && (
