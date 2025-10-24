@@ -147,15 +147,6 @@ export default function TemperatureVitals({
         className="pl-[100.5px] flex-grow mt-7 bg-contain bg-start bg-no-repeat"
         style={{ backgroundImage: `url(/temperature.png)` }}
       >
-        <h1
-          className={cn(
-            warning ? "text-brand-accent" : "text-transparent hidden",
-            "font-mono text-sm pl-3 pb-3"
-          )}
-        >
-          SENSOR PERDEU SINAL, POR FAVOR SE AJUSTE NA <br /> CADEIRA OU CHAME A
-          INFERMEIRA
-        </h1>
         <p className="font-mono text-xs pl-5 py-5">
           Por favor, aguarde{" "}
           <span className="font-bold text-brand-accent">parado</span> enquanto
