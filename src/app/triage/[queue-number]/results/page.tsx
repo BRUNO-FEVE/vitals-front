@@ -3,7 +3,7 @@
 import { Button } from "@/components/button";
 import { useQuiz, QuestionType } from "@/contexts/quiz-context";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 
 export type VitalsType =
@@ -57,7 +57,87 @@ export default function Page() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // Drag scroll state and ref
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startY, setStartY] = useState(0);
+  const [scrollTop, setScrollTop] = useState(0);
+
   console.log(questions);
+
+  // Drag scroll handlers
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleMouseDown = (e: MouseEvent) => {
+      setIsDragging(true);
+      setStartY(e.pageY - container.offsetTop);
+      setScrollTop(container.scrollTop);
+      container.style.cursor = "grabbing";
+      container.style.userSelect = "none";
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      setIsDragging(true);
+      setStartY(e.touches[0].pageY - container.offsetTop);
+      setScrollTop(container.scrollTop);
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      const y = e.pageY - container.offsetTop;
+      const walk = y - startY;
+      container.scrollTop = scrollTop - walk;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isDragging) return;
+      const y = e.touches[0].pageY - container.offsetTop;
+      const walk = y - startY;
+      container.scrollTop = scrollTop - walk;
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      container.style.cursor = "grab";
+      container.style.removeProperty("user-select");
+    };
+
+    const handleTouchEnd = () => {
+      setIsDragging(false);
+    };
+
+    const handleMouseLeave = () => {
+      if (isDragging) {
+        setIsDragging(false);
+        container.style.cursor = "grab";
+        container.style.removeProperty("user-select");
+      }
+    };
+
+    container.addEventListener("mousedown", handleMouseDown);
+    container.addEventListener("touchstart", handleTouchStart);
+    container.addEventListener("mousemove", handleMouseMove);
+    container.addEventListener("touchmove", handleTouchMove);
+    container.addEventListener("mouseup", handleMouseUp);
+    container.addEventListener("touchend", handleTouchEnd);
+    container.addEventListener("mouseleave", handleMouseLeave);
+
+    // Set initial cursor
+    container.style.cursor = "grab";
+
+    return () => {
+      container.removeEventListener("mousedown", handleMouseDown);
+      container.removeEventListener("touchstart", handleTouchStart);
+      container.removeEventListener("mousemove", handleMouseMove);
+      container.removeEventListener("touchmove", handleTouchMove);
+      container.removeEventListener("mouseup", handleMouseUp);
+      container.removeEventListener("touchend", handleTouchEnd);
+      container.removeEventListener("mouseleave", handleMouseLeave);
+    };
+  }, [isDragging, startY, scrollTop]);
 
   const onSumit = async () => {
     if (!user) {
@@ -184,7 +264,11 @@ export default function Page() {
 
   return (
     <div className="w-full h-screen flex flex-row">
-      <div className="bg-white w-2/3 h-full flex flex-col gap-10 py-4 px-12 pr-20 overflow-y-scroll">
+      {/* Review Answers  */}
+      <div
+        ref={scrollContainerRef}
+        className="bg-white w-2/3 h-full flex flex-col gap-10 py-4 px-12 pr-20 overflow-y-scroll touch-pan-y"
+      >
         <div className="">
           <h1 className="font-bold text-4xl text-start">
             Revise suas respostas
@@ -233,10 +317,10 @@ export default function Page() {
         </div>
 
         {/* Vitals Section */}
-        <div className="pl-3 pt-4">
-          <div className="flex flex-col gap-3">
+        <div className="pl-3 pt-2">
+          <div className="flex flex-col gap-1">
             {vitals.map((vital) => (
-              <p key={vital.id} className="font-mono">
+              <p key={vital.id} className="font-mono text-sx">
                 <span className="text-xs uppercase opacity-75">
                   {getVitalLabel(vital.type)}:{" "}
                 </span>
