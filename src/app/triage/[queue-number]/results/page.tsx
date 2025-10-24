@@ -235,19 +235,17 @@ export default function Page() {
         {/* Vitals Section */}
         <div className="pl-3 pt-4">
           <div className="flex flex-col gap-3">
-            {vitals
-              .filter((vital) => vital.type !== "weight") // Exclude weight as per your original logic
-              .map((vital) => (
-                <p key={vital.id} className="font-mono">
-                  <span className="text-xs uppercase opacity-75">
-                    {getVitalLabel(vital.type)}:{" "}
-                  </span>
+            {vitals.map((vital) => (
+              <p key={vital.id} className="font-mono">
+                <span className="text-xs uppercase opacity-75">
+                  {getVitalLabel(vital.type)}:{" "}
+                </span>
 
-                  <br />
+                <br />
 
-                  {formatVitalValue(vital.type, vital.value)}
-                </p>
-              ))}
+                {formatVitalValue(vital.type, vital.value)}
+              </p>
+            ))}
           </div>
 
           {/* Show message if no vitals data */}
