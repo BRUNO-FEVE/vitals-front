@@ -193,7 +193,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
           case "temperature":
             return <TemperatureVitals key={vital.id} index={index} />;
           case "weight":
-            return <WeightVitals key={vital.id} index={index} />;
+            return <WeightVitals key={vital.id} />;
           case "heartbeat/oxygen":
             return <HeartbeatOxygenVitals key={vital.id} index={index} />;
 
@@ -206,8 +206,6 @@ export function QuizProvider({ children }: { children: ReactNode }) {
       const combinedQueue: QuizQueueItem[] = [];
 
       vitalsItems.forEach((vital, index) => {
-        if (vital.type === "weight") return;
-
         combinedComponents.push(vitalsComponents[index]);
         combinedQueue.push({
           question: {
