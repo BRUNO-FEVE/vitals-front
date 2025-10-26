@@ -51,7 +51,7 @@ export default function Pressure() {
               initialValue={INITIAL_SIS_VALUE}
               orientation="horizontal"
             />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-20 border border-brand-accent" />
+            <div className="-z-10 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-20 border border-brand-accent" />
 
             <p className="z-20 text-brand-accent font-mono italic text-base absolute -top-10 right-48 text-center">
               <span className="opacity-25 text-sm">(SIS)</span> <br /> sistólica
